@@ -11,25 +11,23 @@ import org.springframework.security.web.SecurityFilterChain
 class WebSecurityConfig {
 
     @Bean
-    fun securityFilterChain(
-        http: HttpSecurity,
-    ): SecurityFilterChain {
+    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
 
         http
-            .authorizeHttpRequests { authorizeRequests ->
-                authorizeRequests
-                    .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
-                    .requestMatchers("/login").permitAll()
-                    .anyRequest().authenticated()
+            .authorizeHttpRequests {
+                it.requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                it.requestMatchers("/login").permitAll()
+                it.anyRequest().authenticated()
             }
-            .formLogin { formLogin ->
-                formLogin
-                    .loginPage("/login").permitAll()
-                    .defaultSuccessUrl("/mypage")
+            .formLogin {
+                it.loginPage("/login").permitAll()
+                it.defaultSuccessUrl("/mypage")
             }
-//            .headers { headers ->
-//                headers.frameOptions { it.disable() }
-//            }
+            .webAuthn {
+                it.rpName("Spring Security Relying Party")
+                it.rpId("gebogebo.com")
+                it.allowedOrigins(setOf("http://localhost:8080"))
+            }
 
         return http.build()
 

@@ -5,12 +5,31 @@
     <title>My Page</title>
 </head>
 <body>
-<div>
-    <p style="text-align: left;">My Page</p>
-    <div th:text="${userName}"></div>
-    <form th:action="@{/logout}" method="post">
-        <button type="submit">Logout</button>
-    </form>
-</div>
+    <div>
+        <h3 style="text-align: left;">My Page</h3>
+        <div th:text="${userName}"></div>
+        <hr>
+    </div>
+
+    <div>
+        <h3>Passkey Registration</h3>
+        <div>
+            <button href="#" type="button" id="createPasskey">Create passkey</button>
+            <div id="statusCreatePasskey">
+                ...
+            </div>
+        </div>
+        <hr>
+    </div>
+
+    <div>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit">Logout</button>
+        </form>
+        <hr>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="js/index.js"></script>
 </body>
 </html>
