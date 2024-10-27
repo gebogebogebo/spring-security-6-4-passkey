@@ -25,7 +25,7 @@ class WebSecurityConfig {
             }
             .webAuthn {
                 it.rpName("Spring Security Relying Party")
-                it.rpId("gebogebo.com")
+                it.rpId("localhost")
                 it.allowedOrigins(setOf("http://localhost:8080"))
             }
 
