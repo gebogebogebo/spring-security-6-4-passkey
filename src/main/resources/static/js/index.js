@@ -171,9 +171,9 @@ function createCredential(options) {
 
     return navigator.credentials.create({publicKey: options, signal: abortSignal})
         .then(createResponse => {
-            let publicKeyCredential = {
+            let credential = {
                 id: base64UrlEncode(createResponse.rawId),
-                response : {
+                response: {
                     clientDataJSON: base64UrlEncode(createResponse.response.clientDataJSON),
                     attestationObject: base64UrlEncode(createResponse.response.attestationObject)
                 },
@@ -181,17 +181,24 @@ function createCredential(options) {
             };
 
             if (createResponse.getClientExtensionResults) {
-                publicKeyCredential.clientExtensionResults = createResponse.getClientExtensionResults();
+                credential.clientExtensionResults = createResponse.getClientExtensionResults();
             }
 
             // set transports if it is available
             if (typeof createResponse.response.getTransports === "function") {
-                publicKeyCredential.response.transports = createResponse.response.getTransports();
+                credential.response.transports = createResponse.response.getTransports();
+            }
+
+            let publicKeyCredential = {
+                publicKey: {
+                    credential: credential,
+                    label: "hoge",      // TODO
+                }
             }
 
             logObject("=== PublicKeyCredential ===", publicKeyCredential);
 
-            return rest_post("/register/verify", publicKeyCredential);
+            return rest_post("/webauthn/register", publicKeyCredential);
         })
         .catch(function(error) {
             logVariable("create credential error", error);
