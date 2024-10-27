@@ -173,6 +173,7 @@ function createCredential(options) {
         .then(createResponse => {
             let credential = {
                 id: base64UrlEncode(createResponse.rawId),
+                rawId: base64UrlEncode(createResponse.rawId),
                 response: {
                     clientDataJSON: base64UrlEncode(createResponse.response.clientDataJSON),
                     attestationObject: base64UrlEncode(createResponse.response.attestationObject)
