@@ -2,23 +2,34 @@ package com.example.demo.webauthn
 
 import org.springframework.security.web.webauthn.api.Bytes
 import org.springframework.security.web.webauthn.api.CredentialRecord
+import org.springframework.security.web.webauthn.api.ImmutableCredentialRecord
 import org.springframework.security.web.webauthn.management.UserCredentialRepository
 import org.springframework.stereotype.Component
 
 @Component
 class UserCredentialRepositoryImpl: UserCredentialRepository {
+    var credentialRecords: ImmutableCredentialRecord? = null
+
     override fun delete(credentialId: Bytes) {
         // NOP
     }
 
     override fun save(credentialRecord: CredentialRecord) {
-        // NOP
-        val a = 0
+        val credentialId = credentialRecord.credentialId
+        val userEntityUserId = credentialRecord.userEntityUserId
+        val attestationClientDataJSON = credentialRecord.attestationClientDataJSON
+        val attestationObject = credentialRecord.attestationObject
+
+        credentialRecords = ImmutableCredentialRecord.builder()
+            .credentialId(credentialId)
+            .userEntityUserId(userEntityUserId)
+            .attestationClientDataJSON(attestationClientDataJSON)
+            .attestationObject(attestationObject)
+            .build()
     }
 
     override fun findByCredentialId(credentialId: Bytes): CredentialRecord? {
-        // NPT
-        return null
+        return credentialRecords
     }
 
     override fun findByUserId(userId: Bytes): List<CredentialRecord> {

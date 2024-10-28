@@ -1,6 +1,6 @@
 $(window).on('load', function () {
-    $("#createPasskey").on('click', () => createPasskeyButtonClicked());
-    $("#authenticatefido").on('click', () => authenticateFido());
+    $("#createPasskey").on('click', () => createPasskey());
+    $("#authenticatePasskey").on('click', () => signinWithPasskey());
 });
 
 const abortController = new AbortController();
@@ -9,7 +9,7 @@ const abortSignal = abortController.signal;
 /**
  * Register
  */
-function createPasskeyButtonClicked() {
+function createPasskey() {
     getRegChallenge()
         .then(createCredentialOptions => {
             return createCredential(createCredentialOptions);
@@ -28,7 +28,7 @@ function createPasskeyButtonClicked() {
 function authenticateFidoWithConditional() {
     if(PublicKeyCredential.isConditionalMediationAvailable &&
         PublicKeyCredential.isConditionalMediationAvailable()) {
-        authenticateFido();
+        signinWithPasskey();
     } else {
         $("#conditionalUIArea").hide();
         $("#modalUiArea").show();
@@ -36,14 +36,14 @@ function authenticateFidoWithConditional() {
     }
 }
 
-function authenticateFido() {
+function signinWithPasskey() {
     getAuthChallenge()
         .then(getCredentialOptions => {
             return getAssertion(getCredentialOptions);
         })
         .then(assertion => {
             $("#assertion").val(JSON.stringify(assertion));
-            document.authenticate.submit();
+            // document.authenticate.submit();
         })
         .catch(e => {
             $("#status").text("Error: " + e);
@@ -64,15 +64,15 @@ function getRegChallenge() {
 }
 
 function getAuthChallenge() {
-    return rest_post("/authenticate/option")
+    return rest_post("/webauthn/authenticate/options")
         .then(response => {
             logObject("Get auth challenge", response);
-            if (response.status !== 'ok') {
-                return Promise.reject(response.errorMessage);
-            } else {
+            // if (response.status !== 'ok') {
+            //     return Promise.reject(response.errorMessage);
+            // } else {
                 let getCredentialOptions = performGetCredReq(response);
                 return Promise.resolve(getCredentialOptions);
-            }
+            // }
         });
 }
 
@@ -249,15 +249,16 @@ function getAssertion(options) {
     };
 
     // Level3 Conditional UI
-    if(PublicKeyCredential.isConditionalMediationAvailable &&
-       PublicKeyCredential.isConditionalMediationAvailable()) {
-        publicKeyCredentialRequestOptions.mediation = "conditional";
-    }
+    // if(PublicKeyCredential.isConditionalMediationAvailable &&
+    //    PublicKeyCredential.isConditionalMediationAvailable()) {
+    //     publicKeyCredentialRequestOptions.mediation = "conditional";
+    // }
 
     return navigator.credentials.get(publicKeyCredentialRequestOptions)
         .then(getResponse => {
             let publicKeyCredential = {
                 id: base64UrlEncode(getResponse.rawId),
+                rawId: base64UrlEncode(getResponse.rawId),
                 response: {
                     clientDataJSON: base64UrlEncode(getResponse.response.clientDataJSON),
                     userHandle: base64UrlEncode(getResponse.response.userHandle),
@@ -273,7 +274,8 @@ function getAssertion(options) {
 
             logObject("=== PublicKeyCredential ===", publicKeyCredential);
 
-            return Promise.resolve(publicKeyCredential);
+            return rest_post("/login/webauthn", publicKeyCredential);
+            // return Promise.resolve(publicKeyCredential);
         })
         .catch(function(error) {
             logVariable("get assertion error", error);
