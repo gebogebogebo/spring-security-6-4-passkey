@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpSession
+import org.springframework.security.web.webauthn.api.ImmutableCredentialRecord
+import org.springframework.security.web.webauthn.api.ImmutablePublicKeyCredentialUserEntity
 
 @Controller
 class LoginController {
@@ -47,13 +49,24 @@ class LoginController {
         request: HttpServletRequest,
         model: Model,
     ): String {
+        val userName = getUserName(request)
+        model.addAttribute("userName", userName)
+        return "mypage"
+    }
+
+    private fun getUserName(request: HttpServletRequest): String {
         val session = request.session
         val securityContext = session.getAttribute("SPRING_SECURITY_CONTEXT") as SecurityContext
         val authentication = securityContext.authentication
-        val user = authentication.principal as User
-
-        model.addAttribute("userName", user.username)
-
-        return "mypage"
+        val userName = if (authentication.principal is User) {
+            val user = authentication.principal as User
+            user.username
+        } else if (authentication.principal is ImmutablePublicKeyCredentialUserEntity){
+            val user = authentication.principal as ImmutablePublicKeyCredentialUserEntity
+            user.name
+        } else {
+            ""
+        }
+        return userName
     }
 }

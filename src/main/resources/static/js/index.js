@@ -1,12 +1,12 @@
 $(window).on('load', function () {
     $("#createPasskey").on('click', () => createPasskey());
-    $("#authenticatePasskey").on('click', () => signinWithPasskey());
+    $("#authenticatePasskey").on('click', () => signInWithPasskey());
 });
 
 const abortController = new AbortController();
 const abortSignal = abortController.signal;
 
-/**
+/*
  * Register
  */
 function createPasskey() {
@@ -22,101 +22,16 @@ function createPasskey() {
         });
 }
 
-/**
- * Authenticate
- */
-function authenticateFidoWithConditional() {
-    if(PublicKeyCredential.isConditionalMediationAvailable &&
-        PublicKeyCredential.isConditionalMediationAvailable()) {
-        signinWithPasskey();
-    } else {
-        $("#conditionalUIArea").hide();
-        $("#modalUiArea").show();
-        $("#authenticatefidoStatus").text("Browser doesn\'t support Conditional UI.");
-    }
-}
-
-function signinWithPasskey() {
-    getAuthChallenge()
-        .then(getCredentialOptions => {
-            return getAssertion(getCredentialOptions);
-        })
-        .then(assertion => {
-            $("#assertion").val(JSON.stringify(assertion));
-            // document.authenticate.submit();
-        })
-        .catch(e => {
-            $("#status").text("Error: " + e);
-        });
-}
-
 function getRegChallenge() {
     return rest_post("/webauthn/register/options")
         .then(response => {
             logObject("Get reg challenge response", response);
-//            if (response.status !== 'ok') {
-//                return Promise.reject(response.errorMessage);
-//            } else {
-                let createCredentialOptions = performMakeCredReq(response);
-                return Promise.resolve(createCredentialOptions);
-//            }
+            let createCredentialOptions = performMakeCredReq(response);
+            return Promise.resolve(createCredentialOptions);
         });
 }
 
-function getAuthChallenge() {
-    return rest_post("/webauthn/authenticate/options")
-        .then(response => {
-            logObject("Get auth challenge", response);
-            // if (response.status !== 'ok') {
-            //     return Promise.reject(response.errorMessage);
-            // } else {
-                let getCredentialOptions = performGetCredReq(response);
-                return Promise.resolve(getCredentialOptions);
-            // }
-        });
-}
-
-function getCsrfToken() {
-    const csrfInput = document.querySelector('input[name="_csrf"]');
-    return csrfInput ? csrfInput.value : null;
-}
-
-function rest_post(endpoint, object) {
-    const csrfToken = getCsrfToken();
-
-    return fetch(endpoint, {
-            method: "POST",
-            credentials: "same-origin",
-            body: JSON.stringify(object),
-            headers: {
-                "content-type": "application/json",
-                'X-CSRF-TOKEN': csrfToken
-            }
-        })
-        .then(response => {
-            return response.json();
-        });
-}
-
-function logObject(name, object) {
-    console.log(name + ": " + JSON.stringify(object));
-}
-
-function logVariable(name, text) {
-    console.log(name + ": " + text);
-}
-
-function removeEmpty(obj) {
-    for (let key in obj) {
-        if (obj[key] == null || obj[key] === "") {
-            delete obj[key];
-        } else if (typeof obj[key] === 'object') {
-            removeEmpty(obj[key]);
-        }
-    }
-}
-
-let performMakeCredReq = (makeCredReq) => {
+function performMakeCredReq(makeCredReq) {
     makeCredReq.challenge = base64UrlDecode(makeCredReq.challenge);
     makeCredReq.user.id = base64UrlDecode(makeCredReq.user.id);
 
@@ -136,32 +51,6 @@ let performMakeCredReq = (makeCredReq) => {
 
     logObject("Updating credentials ", makeCredReq)
     return makeCredReq;
-}
-
-function base64UrlDecode(base64url) {
-    let input = base64url
-        .replace(/-/g, "+")
-        .replace(/_/g, "/");
-    let diff = input.length % 4;
-    if (!diff) {
-        while(diff) {
-            input += '=';
-            diff--;
-        }
-    }
-
-    return Uint8Array.from(atob(input), c => c.charCodeAt(0));
-}
-
-function base64UrlEncode(arrayBuffer) {
-    if (!arrayBuffer || arrayBuffer.length === 0) {
-        return undefined;
-    }
-
-    return btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)))
-        .replace(/=/g, "")
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_");
 }
 
 function createCredential(options) {
@@ -209,11 +98,38 @@ function createCredential(options) {
             return Promise.reject(error);
         })
         .then(response => {
-            if (response.status !== 'ok') {
-                return Promise.reject(response.errorMessage);
-            } else {
+            if (response.success) {
                 return Promise.resolve(response);
+            } else {
+                return Promise.reject(response.message);
             }
+        });
+}
+
+/*
+ * Authenticate
+ */
+function signInWithPasskey() {
+    getAuthChallenge()
+        .then(getCredentialOptions => {
+            return getAssertion(getCredentialOptions);
+        })
+        .then(redirectUrl => {
+            if (redirectUrl) {
+                window.location.href = redirectUrl;
+            }
+        })
+        .catch(e => {
+            $("#status").text("Error: " + e);
+        });
+}
+
+function getAuthChallenge() {
+    return rest_post("/webauthn/authenticate/options")
+        .then(response => {
+            logObject("Get auth challenge", response);
+            let getCredentialOptions = performGetCredReq(response);
+            return Promise.resolve(getCredentialOptions);
         });
 }
 
@@ -248,12 +164,6 @@ function getAssertion(options) {
         signal: abortSignal,
     };
 
-    // Level3 Conditional UI
-    // if(PublicKeyCredential.isConditionalMediationAvailable &&
-    //    PublicKeyCredential.isConditionalMediationAvailable()) {
-    //     publicKeyCredentialRequestOptions.mediation = "conditional";
-    // }
-
     return navigator.credentials.get(publicKeyCredentialRequestOptions)
         .then(getResponse => {
             let publicKeyCredential = {
@@ -283,5 +193,81 @@ function getAssertion(options) {
                 console.info("Aborted by user");
             }
             return Promise.reject(error);
+        })
+        .then(response => {
+            if (response.authenticated) {
+                return Promise.resolve(response.redirectUrl);
+            } else {
+                return Promise.reject(response.message);
+            }
         });
+}
+
+/*
+ * functions
+ */
+function getCsrfToken() {
+    const csrfInput = document.querySelector('input[name="_csrf"]');
+    return csrfInput ? csrfInput.value : null;
+}
+
+function rest_post(endpoint, object) {
+    const csrfToken = getCsrfToken();
+
+    return fetch(endpoint, {
+            method: "POST",
+            credentials: "same-origin",
+            body: JSON.stringify(object),
+            headers: {
+                "content-type": "application/json",
+                'X-CSRF-TOKEN': csrfToken
+            }
+        })
+        .then(response => {
+            return response.json();
+        });
+}
+
+function logObject(name, object) {
+    console.log(name + ": " + JSON.stringify(object));
+}
+
+function logVariable(name, text) {
+    console.log(name + ": " + text);
+}
+
+function removeEmpty(obj) {
+    for (let key in obj) {
+        if (obj[key] == null || obj[key] === "") {
+            delete obj[key];
+        } else if (typeof obj[key] === 'object') {
+            removeEmpty(obj[key]);
+        }
+    }
+}
+
+function base64UrlDecode(base64url) {
+    let input = base64url
+        .replace(/-/g, "+")
+        .replace(/_/g, "/");
+    let diff = input.length % 4;
+    if (!diff) {
+        while(diff) {
+            input += '=';
+            diff--;
+        }
+    }
+
+    return Uint8Array.from(atob(input), c => c.charCodeAt(0));
+}
+
+function base64UrlEncode(arrayBuffer) {
+    if (!arrayBuffer || arrayBuffer.length === 0) {
+        return undefined;
+    }
+
+    return btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)))
+        .replace(/=/g, "")
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_");
 }
