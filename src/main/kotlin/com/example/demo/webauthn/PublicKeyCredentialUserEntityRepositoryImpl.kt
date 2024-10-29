@@ -12,11 +12,11 @@ class PublicKeyCredentialUserEntityRepositoryImpl(
     private val mUserRepository: MuserRepository
 ) : PublicKeyCredentialUserEntityRepository {
     override fun findByUsername(username: String): PublicKeyCredentialUserEntity? {
-        return mUserRepository.findById(username).orElse(null)?.let {
+        return mUserRepository.findByUserId(username)?.let {
             ImmutablePublicKeyCredentialUserEntity.builder()
-                .id(createUserId(it.id))
-                .name(it.name)
-                .displayName(it.id)
+                .id(createUserId(it.internalId))
+                .name(it.userId)
+                .displayName(it.displayName)
                 .build()
         }
     }
@@ -29,11 +29,12 @@ class PublicKeyCredentialUserEntityRepositoryImpl(
         TODO("Not yet implemented")
     }
 
+    override fun save(userEntity: PublicKeyCredentialUserEntity) {
+        TODO("Not yet implemented")
+    }
+
     override fun delete(id: Bytes?) {
         TODO("Not yet implemented")
     }
 
-    override fun save(userEntity: PublicKeyCredentialUserEntity) {
-        TODO("Not yet implemented")
-    }
 }
