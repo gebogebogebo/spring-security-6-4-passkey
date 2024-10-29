@@ -12,18 +12,9 @@ import org.springframework.stereotype.Component
 class UserCredentialRepositoryImpl(
     private val mPasskeyCredentialRepository: MpasskeyCredentialRepository,
 ) : UserCredentialRepository {
-    var credentialRecords: ImmutableCredentialRecord? = null
-
     override fun save(credentialRecord: CredentialRecord) {
-        /*
-create table M_PASSKEY_CREDENTIAL (
-    ID int default 0 not null auto_increment primary key,
-    CREDENTIAL_ID varbinary not null unique,
-    USER_INTERNAL_ID varchar not null,
-    ATTESTED_CREDENTIAL_DATA_JSON varbinary,
-    ATTESTATION_OBJECT varbinary
-);
-         */
+        val rec = mPasskeyCredentialRepository.findByCredentialId(credentialRecord.credentialId.bytes)
+        val id = rec?.id ?: 0
 
         val credentialId = credentialRecord.credentialId
         val userInternalId = String(credentialRecord.userEntityUserId.bytes)
@@ -31,7 +22,7 @@ create table M_PASSKEY_CREDENTIAL (
         val attestationObject = credentialRecord.attestationObject
 
         val entity = MpasskeyCredential(
-            0,
+            id,
             credentialId.bytes,
             userInternalId,
             attestationClientDataJSON.bytes,
@@ -42,7 +33,14 @@ create table M_PASSKEY_CREDENTIAL (
     }
 
     override fun findByCredentialId(credentialId: Bytes): CredentialRecord? {
-        return credentialRecords
+        return mPasskeyCredentialRepository.findByCredentialId(credentialId.bytes)?.let{
+            ImmutableCredentialRecord.builder()
+                .credentialId(Bytes(it.credentialId))
+                .userEntityUserId(createUserId(it.userInternalId))
+                .attestationClientDataJSON(Bytes(it.attestedCredentialDataJson))
+                .attestationObject(Bytes(it.attestationObject))
+                .build()
+        }
     }
 
     override fun findByUserId(userId: Bytes): List<CredentialRecord> {

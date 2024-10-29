@@ -4,4 +4,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface MpasskeyCredentialRepository : JpaRepository<MpasskeyCredential, Int> {
     fun findByUserInternalId(userInternalId: String): List<MpasskeyCredential>
+    fun findByCredentialId(credentialId: ByteArray): MpasskeyCredential?
 }

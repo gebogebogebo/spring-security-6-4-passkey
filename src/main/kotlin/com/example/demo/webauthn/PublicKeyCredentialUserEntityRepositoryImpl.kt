@@ -31,7 +31,8 @@ class PublicKeyCredentialUserEntityRepositoryImpl(
     }
 
     override fun save(userEntity: PublicKeyCredentialUserEntity) {
-        TODO("Not yet implemented")
+        // TODO
+        return
     }
 
     override fun delete(id: Bytes?) {
