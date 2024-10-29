@@ -15,5 +15,7 @@ import org.springframework.data.jpa.repository.JpaRepository
  * ※カスタムメソッドを実装したクラスのインターフェースを指定することで、カスタムメソッドを追加可能
  */
 interface MuserRepository : JpaRepository<Muser, String> {
-    fun findByName(name: String): Muser?
+    fun findByInternalId(internalId: String): Muser?
+//    fun findByName(name: String): Muser?
+    fun findByUserId(userId: String): Muser?
 }

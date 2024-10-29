@@ -17,8 +17,8 @@ class SampleUserDetailsService(
             throw UsernameNotFoundException("userId is null or empty")
         }
 
-        val mUser = mUserRepository.findById(userId).orElse(null) ?: throw UsernameNotFoundException("Not found userId")
+        val mUser = mUserRepository.findByUserId(userId) ?: throw UsernameNotFoundException("Not found userId")
 
-        return User(mUser.id,mUser.password, Collections.emptyList())
+        return User(mUser.userId, mUser.password, Collections.emptyList())
     }
 }

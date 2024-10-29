@@ -27,9 +27,6 @@ class WebSecurityConfig {
                     .loginPage("/login").permitAll()
                     .defaultSuccessUrl("/mypage")
             }
-//            .headers { headers ->
-//                headers.frameOptions { it.disable() }
-//            }
 
         return http.build()
 
