@@ -10,10 +10,6 @@ import org.springframework.stereotype.Component
 class UserCredentialRepositoryImpl: UserCredentialRepository {
     var credentialRecords: ImmutableCredentialRecord? = null
 
-    override fun delete(credentialId: Bytes) {
-        // NOP
-    }
-
     override fun save(credentialRecord: CredentialRecord) {
         val credentialId = credentialRecord.credentialId
         val userEntityUserId = credentialRecord.userEntityUserId
@@ -33,8 +29,14 @@ class UserCredentialRepositoryImpl: UserCredentialRepository {
     }
 
     override fun findByUserId(userId: Bytes): List<CredentialRecord> {
-        // NPT
-        return emptyList()
+        return if (credentialRecords != null) {
+            listOf(credentialRecords!!)
+        } else {
+            emptyList()
+        }
     }
 
+    override fun delete(credentialId: Bytes) {
+        // NOP
+    }
 }
