@@ -21,6 +21,7 @@ class PublicKeyCredentialUserEntityRepositoryImpl(
         }
     }
 
+    // TODO 共通化
     private fun createUserId(userId: String): Bytes {
         return Bytes(userId.toByteArray())
     }

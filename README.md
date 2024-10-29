@@ -54,6 +54,14 @@ create table M_USER (
   DISPLAY_NAME varchar(64) not null,
   PASSWORD varchar(128) not null
 );
+
+create table M_PASSKEY_CREDENTIAL (
+    ID int default 0 not null auto_increment primary key,
+    CREDENTIAL_ID varbinary not null unique,
+    USER_INTERNAL_ID varchar not null,
+    ATTESTED_CREDENTIAL_DATA_JSON varbinary,
+    ATTESTATION_OBJECT varbinary
+);
 ```
 
 

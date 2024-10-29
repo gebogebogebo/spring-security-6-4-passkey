@@ -1,0 +1,10 @@
+2024-10-29 18:09:45.049272+09:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: SQLステートメントに文法エラーがあります "create table M_PASSKEY_CREDENTIAL (\000d\000a    ID int default 0 not null auto_increment primary key,\000d\000a    CREDENTIAL_ID varbinary not null unique,\000d\000a    USER_INTERNAL_ID varchar not null,\000d\000a    ATTESTED_CREDENTIAL_DATA_JSON varbinary,\000d\000a    ATTESTATION_OBJECT varbinary,\000d\000a[*])"; 期待されるステートメント "identifier"
+Syntax error in SQL statement "create table M_PASSKEY_CREDENTIAL (\000d\000a    ID int default 0 not null auto_increment primary key,\000d\000a    CREDENTIAL_ID varbinary not null unique,\000d\000a    USER_INTERNAL_ID varchar not null,\000d\000a    ATTESTED_CREDENTIAL_DATA_JSON varbinary,\000d\000a    ATTESTATION_OBJECT varbinary,\000d\000a[*])"; expected "identifier"; SQL statement:
+create table M_PASSKEY_CREDENTIAL (
+    ID int default 0 not null auto_increment primary key,
+    CREDENTIAL_ID varbinary not null unique,
+    USER_INTERNAL_ID varchar not null,
+    ATTESTED_CREDENTIAL_DATA_JSON varbinary,
+    ATTESTATION_OBJECT varbinary,
+) [42001-232]
