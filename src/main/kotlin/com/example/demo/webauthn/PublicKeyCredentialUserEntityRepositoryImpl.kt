@@ -26,8 +26,17 @@ class PublicKeyCredentialUserEntityRepositoryImpl(
         return Bytes(userId.toByteArray())
     }
 
-    override fun findById(id: Bytes?): PublicKeyCredentialUserEntity {
-        TODO("Not yet implemented")
+    override fun findById(id: Bytes): PublicKeyCredentialUserEntity? {
+        // TODO 共通化
+        val userInternalId = String(id.bytes)
+
+        return mUserRepository.findByInternalId(userInternalId)?.let {
+            ImmutablePublicKeyCredentialUserEntity.builder()
+                .id(createUserId(it.internalId))
+                .name(it.userId)
+                .displayName(it.displayName)
+                .build()
+        }
     }
 
     override fun save(userEntity: PublicKeyCredentialUserEntity) {
