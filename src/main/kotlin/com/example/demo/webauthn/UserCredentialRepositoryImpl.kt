@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component
 class UserCredentialRepositoryImpl(
     private val mPasskeyCredentialRepository: MpasskeyCredentialRepository,
 ) : UserCredentialRepository {
+
     override fun save(credentialRecord: CredentialRecord) {
         val rec = mPasskeyCredentialRepository.findByCredentialId(credentialRecord.credentialId.bytes)
         val id = rec?.id ?: 0
@@ -43,7 +44,11 @@ class UserCredentialRepositoryImpl(
         }
     }
 
-    override fun findByUserId(userId: Bytes): List<CredentialRecord> {
+    override fun findByUserId(userId: Bytes?): List<CredentialRecord> {
+        if (userId == null) {
+            return emptyList()
+        }
+
         // TODO 共通化
         val userInternalId = String(userId.bytes)
 
@@ -65,6 +70,6 @@ class UserCredentialRepositoryImpl(
     }
 
     override fun delete(credentialId: Bytes) {
-        // NOP
+        TODO("Not yet implemented")
     }
 }

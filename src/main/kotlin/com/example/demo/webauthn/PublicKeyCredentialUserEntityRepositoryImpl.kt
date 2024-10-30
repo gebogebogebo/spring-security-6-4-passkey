@@ -12,6 +12,10 @@ class PublicKeyCredentialUserEntityRepositoryImpl(
     private val mUserRepository: MuserRepository
 ) : PublicKeyCredentialUserEntityRepository {
     override fun findByUsername(username: String): PublicKeyCredentialUserEntity? {
+        if (username == "anonymousUser") {
+            return ImmutablePublicKeyCredentialUserEntity.builder().build()
+        }
+
         return mUserRepository.findByUserId(username)?.let {
             ImmutablePublicKeyCredentialUserEntity.builder()
                 .id(createUserId(it.internalId))
@@ -27,8 +31,7 @@ class PublicKeyCredentialUserEntityRepositoryImpl(
     }
 
     override fun findById(id: Bytes): PublicKeyCredentialUserEntity? {
-        // TODO 共通化
-        val userInternalId = String(id.bytes)
+        val userInternalId = UserEntityIdUtil.toInternalId(id) ?: return null
 
         return mUserRepository.findByInternalId(userInternalId)?.let {
             ImmutablePublicKeyCredentialUserEntity.builder()
@@ -40,8 +43,7 @@ class PublicKeyCredentialUserEntityRepositoryImpl(
     }
 
     override fun save(userEntity: PublicKeyCredentialUserEntity) {
-        // TODO
-        return
+        TODO("Not yet implemented")
     }
 
     override fun delete(id: Bytes?) {
