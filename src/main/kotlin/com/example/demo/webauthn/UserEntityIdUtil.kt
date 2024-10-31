@@ -12,7 +12,6 @@ class UserEntityIdUtil {
             return if (userEntityId == null) {
                 null
             } else {
-                // TODO 結果 _ から始まらないとエラー
                 String(userEntityId.bytes)
             }
         }

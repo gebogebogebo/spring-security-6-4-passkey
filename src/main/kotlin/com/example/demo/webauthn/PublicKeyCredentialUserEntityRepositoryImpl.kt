@@ -18,16 +18,11 @@ class PublicKeyCredentialUserEntityRepositoryImpl(
 
         return mUserRepository.findByUserId(username)?.let {
             ImmutablePublicKeyCredentialUserEntity.builder()
-                .id(createUserId(it.internalId))
+                .id(UserEntityIdUtil.fromInternalId(it.internalId))
                 .name(it.userId)
                 .displayName(it.displayName)
                 .build()
         }
-    }
-
-    // TODO 共通化
-    private fun createUserId(userId: String): Bytes {
-        return Bytes(userId.toByteArray())
     }
 
     override fun findById(id: Bytes): PublicKeyCredentialUserEntity? {
@@ -35,7 +30,7 @@ class PublicKeyCredentialUserEntityRepositoryImpl(
 
         return mUserRepository.findByInternalId(userInternalId)?.let {
             ImmutablePublicKeyCredentialUserEntity.builder()
-                .id(createUserId(it.internalId))
+                .id(UserEntityIdUtil.fromInternalId(it.internalId))
                 .name(it.userId)
                 .displayName(it.displayName)
                 .build()

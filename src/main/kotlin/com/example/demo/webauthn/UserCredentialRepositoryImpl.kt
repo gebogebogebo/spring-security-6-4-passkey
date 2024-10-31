@@ -34,10 +34,10 @@ class UserCredentialRepositoryImpl(
     }
 
     override fun findByCredentialId(credentialId: Bytes): CredentialRecord? {
-        return mPasskeyCredentialRepository.findByCredentialId(credentialId.bytes)?.let{
+        return mPasskeyCredentialRepository.findByCredentialId(credentialId.bytes)?.let {
             ImmutableCredentialRecord.builder()
                 .credentialId(Bytes(it.credentialId))
-                .userEntityUserId(createUserId(it.userInternalId))
+                .userEntityUserId(UserEntityIdUtil.fromInternalId(it.userInternalId))
                 .attestationClientDataJSON(Bytes(it.attestedCredentialDataJson))
                 .attestationObject(Bytes(it.attestationObject))
                 .build()
@@ -45,28 +45,17 @@ class UserCredentialRepositoryImpl(
     }
 
     override fun findByUserId(userId: Bytes?): List<CredentialRecord> {
-        if (userId == null) {
-            return emptyList()
-        }
-
-        // TODO 共通化
-        val userInternalId = String(userId.bytes)
-
+        val userInternalId = UserEntityIdUtil.toInternalId(userId) ?: return emptyList()
         val credentials = mPasskeyCredentialRepository.findByUserInternalId(userInternalId)
 
         return credentials.map {
             ImmutableCredentialRecord.builder()
                 .credentialId(Bytes(it.credentialId))
-                .userEntityUserId(createUserId(it.userInternalId))
+                .userEntityUserId(UserEntityIdUtil.fromInternalId(it.userInternalId))
                 .attestationClientDataJSON(Bytes(it.attestedCredentialDataJson))
                 .attestationObject(Bytes(it.attestationObject))
                 .build()
         }
-    }
-
-    // TODO 共通化
-    private fun createUserId(userId: String): Bytes {
-        return Bytes(userId.toByteArray())
     }
 
     override fun delete(credentialId: Bytes) {

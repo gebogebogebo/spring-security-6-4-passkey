@@ -12,7 +12,6 @@ class WebSecurityConfig {
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
-
         http
             .authorizeHttpRequests {
                 it.requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
@@ -30,7 +29,6 @@ class WebSecurityConfig {
             }
 
         return http.build()
-
     }
 
 }

@@ -1,17 +1,16 @@
 package com.example.demo.controller
 
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpSession
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCEPTION
+import org.springframework.security.web.webauthn.api.ImmutablePublicKeyCredentialUserEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
-import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpSession
-import org.springframework.security.web.webauthn.api.ImmutableCredentialRecord
-import org.springframework.security.web.webauthn.api.ImmutablePublicKeyCredentialUserEntity
 
 @Controller
 class LoginController {
@@ -58,15 +57,13 @@ class LoginController {
         val session = request.session
         val securityContext = session.getAttribute("SPRING_SECURITY_CONTEXT") as SecurityContext
         val authentication = securityContext.authentication
-        val userName = if (authentication.principal is User) {
-            val user = authentication.principal as User
-            user.username
-        } else if (authentication.principal is ImmutablePublicKeyCredentialUserEntity){
-            val user = authentication.principal as ImmutablePublicKeyCredentialUserEntity
-            user.name
-        } else {
-            ""
+
+        val userName = when (val principal = authentication.principal) {
+            is User -> principal.username
+            is ImmutablePublicKeyCredentialUserEntity -> principal.name
+            else -> ""
         }
+
         return userName
     }
 }
