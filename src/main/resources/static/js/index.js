@@ -273,48 +273,63 @@ function base64UrlEncode(arrayBuffer) {
 }
 
 /*
- * functions
+ * Register
  */
 async function register() {
-    const csrfToken = getCsrfToken();d
-    const { startRegistration } = SimpleWebAuthnBrowser;
+    const csrfToken = getCsrfToken();
 
-    const resp = await fetch('/webauthn/register/options', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken
-        }
-    });
+    // get option
     let attResp;
     try {
+        const resp = await fetch("/webauthn/register/options", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken
+            }
+        });
+
         let optionsJSON = await resp.json();
         let options = {
             optionsJSON: optionsJSON,
             useAutoRegister: false
         }
-        attResp = await startRegistration(options);
-    } catch (error) {
-        if (error.name === 'InvalidStateError') {
-            elemError.innerText = 'Error: Authenticator was probably already registered by user';
+        attResp = await SimpleWebAuthnBrowser.startRegistration(options);
+    } catch (e) {
+        if (e.name === "InvalidStateError") {
+            $("#statusCreatePasskey").text("Error: Authenticator was probably already registered by user");
         } else {
-            elemError.innerText = error;
+            $("#statusCreatePasskey").text("Error: " + e);
         }
-        throw error;
+        return;
     }
-    const verificationResp = await fetch('/webauthn/register', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(attResp),
-    });
-    const verificationJSON = await verificationResp.json();
 
-    if (verificationJSON && verificationJSON.status === 'ok') {
-        elemSuccess.innerText = 'Successfully registered!';
-    } else {
-        elemError.innerText = 'Error: ' + verificationJSON.errorMessage;
+    // verify
+    let publicKeyCredential = {
+        publicKey: {
+            credential: attResp,
+            label: "hoge",      // TODO Set a fixed value for label.
+        }
+    }
+
+    const verificationResp = await fetch('/webauthn/register', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": csrfToken
+        },
+        body: JSON.stringify(publicKeyCredential),
+    });
+
+    try {
+        const verificationJSON = await verificationResp.json();
+        if (verificationJSON && verificationJSON.success) {
+            $("#statusCreatePasskey").text("Successfully created passkey!");
+        } else {
+            $("#statusCreatePasskey").text("Failed to create passkey.");
+        }
+    } catch (e) {
+        $("#statusCreatePasskey").text("Error: " + e);
     }
 }
