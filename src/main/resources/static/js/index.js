@@ -271,3 +271,50 @@ function base64UrlEncode(arrayBuffer) {
         .replace(/\+/g, "-")
         .replace(/\//g, "_");
 }
+
+/*
+ * functions
+ */
+async function register() {
+    const csrfToken = getCsrfToken();d
+    const { startRegistration } = SimpleWebAuthnBrowser;
+
+    const resp = await fetch('/webauthn/register/options', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        }
+    });
+    let attResp;
+    try {
+        let optionsJSON = await resp.json();
+        let options = {
+            optionsJSON: optionsJSON,
+            useAutoRegister: false
+        }
+        attResp = await startRegistration(options);
+    } catch (error) {
+        if (error.name === 'InvalidStateError') {
+            elemError.innerText = 'Error: Authenticator was probably already registered by user';
+        } else {
+            elemError.innerText = error;
+        }
+        throw error;
+    }
+    const verificationResp = await fetch('/webauthn/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(attResp),
+    });
+    const verificationJSON = await verificationResp.json();
+
+    if (verificationJSON && verificationJSON.status === 'ok') {
+        elemSuccess.innerText = 'Successfully registered!';
+    } else {
+        elemError.innerText = 'Error: ' + verificationJSON.errorMessage;
+    }
+}

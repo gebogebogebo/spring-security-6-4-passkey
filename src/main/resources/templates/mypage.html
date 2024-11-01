@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
 <head>
     <meta charset="UTF-8">
     <title>My Page</title>
@@ -20,6 +21,12 @@
             </div>
         </div>
         <hr>
+        <div>
+            <button type="submit" id="createPasskey2" onclick="register()">Create passkey2</button>
+            <div id="statusCreatePasskey2">
+                ...
+            </div>
+        </div>
     </div>
 
     <div>
