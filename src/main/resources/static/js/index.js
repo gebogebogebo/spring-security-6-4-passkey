@@ -1,6 +1,7 @@
 $(window).on('load', function () {
     $("#createPasskey").on('click', () => createPasskey());
     $("#authenticatePasskey").on('click', () => signInWithPasskey());
+    $("#authenticatePasskey2").on('click', () => authenticate());
 });
 
 const abortController = new AbortController();
@@ -332,4 +333,53 @@ async function register() {
     } catch (e) {
         $("#statusCreatePasskey").text("Error: " + e);
     }
+}
+
+/*
+ * Authenticate
+ */
+async function authenticate() {
+    const csrfToken = getCsrfToken();
+
+    // get option
+    let asseResp;
+    try {
+        const resp = await fetch("/webauthn/authenticate/options", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken
+            }
+        });
+
+        const optionsJSON = await resp.json();
+        asseResp = await SimpleWebAuthnBrowser.startAuthentication({ optionsJSON });
+    } catch (e) {
+        $("#statusSigninWithPasskey").text("Error: " + e);
+        return;
+    }
+
+    // verify
+    try {
+        const verificationResp = await fetch("/login/webauthn", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken,
+            },
+            body: JSON.stringify(asseResp),
+        });
+
+        const verificationJSON = await verificationResp.json();
+        if (verificationJSON.authenticated) {
+            if (verificationJSON.redirectUrl) {
+                window.location.href = verificationJSON.redirectUrl;
+            }
+        } else {
+            $("#statusSigninWithPasskey").text("Error: " + verificationJSON.message);
+        }
+    } catch (e) {
+        $("#statusSigninWithPasskey").text("Error: " + e);
+    }
+
 }
