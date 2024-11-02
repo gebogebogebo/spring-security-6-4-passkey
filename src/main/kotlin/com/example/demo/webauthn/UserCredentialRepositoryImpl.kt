@@ -5,6 +5,7 @@ import com.example.demo.repository.MpasskeyCredentialRepository
 import org.springframework.security.web.webauthn.api.Bytes
 import org.springframework.security.web.webauthn.api.CredentialRecord
 import org.springframework.security.web.webauthn.api.ImmutableCredentialRecord
+import org.springframework.security.web.webauthn.api.ImmutablePublicKeyCose
 import org.springframework.security.web.webauthn.management.UserCredentialRepository
 import org.springframework.stereotype.Component
 
@@ -19,15 +20,24 @@ class UserCredentialRepositoryImpl(
 
         val credentialId = credentialRecord.credentialId
         val userInternalId = String(credentialRecord.userEntityUserId.bytes)
+        val publicKey = credentialRecord.publicKey
         val attestationClientDataJSON = credentialRecord.attestationClientDataJSON
         val attestationObject = credentialRecord.attestationObject
+
         // TODO Transports always seem to be empty.
-        val transports = credentialRecord.transports
+        // val transports = credentialRecord.transports
+
+        // TODO Better save it.
+        // - signatureCount
+        // - backupEligible
+        // - created
+        // - lastUsed
 
         val entity = MpasskeyCredential(
             id,
             credentialId.bytes,
             userInternalId,
+            publicKey.bytes,
             attestationClientDataJSON.bytes,
             attestationObject.bytes,
         )
@@ -40,6 +50,7 @@ class UserCredentialRepositoryImpl(
             ImmutableCredentialRecord.builder()
                 .credentialId(Bytes(it.credentialId))
                 .userEntityUserId(UserEntityIdUtil.fromInternalId(it.userInternalId))
+                .publicKey(ImmutablePublicKeyCose(it.publicKey))
                 .attestationClientDataJSON(Bytes(it.attestedCredentialDataJson))
                 .attestationObject(Bytes(it.attestationObject))
                 .build()
@@ -54,6 +65,7 @@ class UserCredentialRepositoryImpl(
             ImmutableCredentialRecord.builder()
                 .credentialId(Bytes(it.credentialId))
                 .userEntityUserId(UserEntityIdUtil.fromInternalId(it.userInternalId))
+                .publicKey(ImmutablePublicKeyCose(it.publicKey))
                 .attestationClientDataJSON(Bytes(it.attestedCredentialDataJson))
                 .attestationObject(Bytes(it.attestationObject))
                 .transports(emptySet())
