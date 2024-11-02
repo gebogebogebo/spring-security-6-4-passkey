@@ -10,9 +10,9 @@ async function createPasskey() {
     const csrfToken = getCsrfToken();
 
     // get option
-    let attResp;
+    let optionsJSON;
     try {
-        const resp = await fetch("/webauthn/register/options", {
+        let optResp = await fetch("/webauthn/register/options", {
             method: "POST",
             credentials: "same-origin",
             headers: {
@@ -20,8 +20,15 @@ async function createPasskey() {
                 "X-CSRF-TOKEN": csrfToken
             }
         });
+        optionsJSON = await optResp.json();
+    } catch (e) {
+        $("#statusCreatePasskey").text("Error: " + e);
+        return;
+    }
 
-        let optionsJSON = await resp.json();
+    // startRegistration
+    let attResp;
+    try {
         let options = {
             optionsJSON: optionsJSON,
             useAutoRegister: false
