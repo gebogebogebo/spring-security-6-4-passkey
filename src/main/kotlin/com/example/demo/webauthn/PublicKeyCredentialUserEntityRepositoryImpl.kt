@@ -11,18 +11,18 @@ import org.springframework.stereotype.Component
 class PublicKeyCredentialUserEntityRepositoryImpl(
     private val mUserRepository: MuserRepository
 ) : PublicKeyCredentialUserEntityRepository {
-    override fun findByUsername(username: String): PublicKeyCredentialUserEntity? {
+    override fun findByUsername(username: String): PublicKeyCredentialUserEntity {
         if (username == "anonymousUser") {
             return ImmutablePublicKeyCredentialUserEntity.builder().build()
         }
 
-        return mUserRepository.findByUserId(username)?.let {
-            ImmutablePublicKeyCredentialUserEntity.builder()
-                .id(UserEntityIdUtil.fromInternalId(it.internalId))
-                .name(it.userId)
-                .displayName(it.displayName)
-                .build()
-        }
+        val user = mUserRepository.findByUserId(username) ?: return ImmutablePublicKeyCredentialUserEntity.builder().build()
+
+        return ImmutablePublicKeyCredentialUserEntity.builder()
+            .id(UserEntityIdUtil.fromInternalId(user.internalId))
+            .name(user.userId)
+            .displayName(user.displayName)
+            .build()
     }
 
     override fun findById(id: Bytes): PublicKeyCredentialUserEntity? {
