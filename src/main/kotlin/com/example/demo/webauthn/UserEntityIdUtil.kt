@@ -9,11 +9,7 @@ class UserEntityIdUtil {
         }
 
         fun toInternalId(userEntityId: Bytes?): String? {
-            return if (userEntityId == null) {
-                null
-            } else {
-                String(userEntityId.bytes)
-            }
+            return userEntityId?.bytes?.let { String(it) }
         }
     }
 }
