@@ -59,6 +59,7 @@ create table M_PASSKEY_CREDENTIAL (
     ID int default 0 not null auto_increment primary key,
     CREDENTIAL_ID varbinary not null unique,
     USER_INTERNAL_ID varchar not null,
+    PUBLIC_KEY varbinary,
     ATTESTED_CREDENTIAL_DATA_JSON varbinary,
     ATTESTATION_OBJECT varbinary
 );

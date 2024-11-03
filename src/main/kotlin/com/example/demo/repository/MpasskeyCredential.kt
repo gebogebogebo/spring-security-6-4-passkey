@@ -31,6 +31,9 @@ data class MpasskeyCredential(
     @Column(name="USER_INTERNAL_ID")
     var userInternalId: String,
 
+    @Column(name="PUBLIC_KEY")
+    var publicKey: ByteArray,
+
     @Column(name="ATTESTED_CREDENTIAL_DATA_JSON")
     var attestedCredentialDataJson: ByteArray,
 
